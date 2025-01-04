@@ -1,37 +1,89 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
+import { decode as jwt_decode } from "jwt-decode";
+import { api } from "@/services/api"; // Sua API
+import { getCookieClient, removeCookieClient } from "@/lib/cookie.client"; // Funções para pegar e remover o token
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  phoneNumber: string;
+}
 
 const DropdownUser = () => {
- 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Função para logout
-  
+  // Função para obter o userId do token
+  const getUserIdFromToken = (token: string) => {
+    try {
+      const decodedToken: any = jwt_decode(token); // Decodifica o token
+      return decodedToken?.sub || null;  // Ajuste para o campo correto, como 'sub'
+    } catch (error) {
+      console.error("Erro ao decodificar o token", error);
+      return null;
+    }
+  };
 
-  // Função para alternar o estado de dropdown
+  const fetchUserData = useCallback(async () => {
+    const token = getCookieClient();  // Obtém o token
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    const userId = getUserIdFromToken(token);  // Obtém o userId do token
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.get(`/profile/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setUserProfile(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Erro ao carregar dados do usuário", error);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
   const toggleDropdown = useCallback(() => {
     setDropdownOpen((prevState) => !prevState);
   }, []);
 
-  // Fechar o dropdown quando clicar fora
   const closeDropdown = useCallback(() => {
     setDropdownOpen(false);
   }, []);
 
+  // Função para realizar o logout
+  const handleLogout = () => {
+    removeCookieClient(); // Remove o token do cookie
+    window.location.href = "/login"; // Redireciona o usuário para a página de login
+  };
+
   return (
     <ClickOutside onClick={closeDropdown} className="relative">
-      <Link
-        onClick={toggleDropdown}
-        className="flex items-center gap-4"
-        href="#"
-      >
+      <Link onClick={toggleDropdown} className="flex items-center gap-4" href="#">
         <span className="h-12 w-12 rounded-full">
           <Image
             width={112}
             height={112}
-            src="/images/user/user-03.png"
+            src={userProfile?.avatar || "/images/user/user-03.png"}
             style={{ width: "auto", height: "auto" }}
             alt="User"
             className="overflow-hidden rounded-full"
@@ -39,8 +91,7 @@ const DropdownUser = () => {
         </span>
 
         <span className="flex items-center gap-2 font-medium text-dark dark:text-dark-6">
-          <span className="hidden lg:block">Jhon Smith</span>
-
+          <span className="hidden lg:block">{loading ? "Carregando..." : userProfile?.name}</span>
           <svg
             className={`fill-current duration-200 ease-in ${dropdownOpen && "rotate-180"}`}
             width="20"
@@ -58,7 +109,6 @@ const DropdownUser = () => {
         </span>
       </Link>
 
-      {/* Dropdown Options */}
       {dropdownOpen && (
         <div className="absolute right-0 mt-7.5 flex w-[280px] flex-col rounded-lg border-[0.5px] border-stroke bg-white shadow-default dark:border-dark-3 dark:bg-gray-dark">
           <div className="flex items-center gap-2.5 px-5 pb-5.5 pt-3.5">
@@ -66,7 +116,7 @@ const DropdownUser = () => {
               <Image
                 width={112}
                 height={112}
-                src="/images/user/user-03.png"
+                src={userProfile?.avatar || "/images/user/user-03.png"}
                 style={{ width: "auto", height: "auto" }}
                 alt="User"
                 className="overflow-hidden rounded-full"
@@ -76,10 +126,10 @@ const DropdownUser = () => {
 
             <span className="block">
               <span className="block font-medium text-dark dark:text-white">
-                Jhon Smith
+                {loading ? "Carregando..." : userProfile?.name}
               </span>
               <span className="block font-medium text-dark-5 dark:text-dark-6">
-                jonson@nextadmin.com
+                {loading ? "Carregando..." : userProfile?.email}
               </span>
             </span>
           </div>
@@ -88,7 +138,7 @@ const DropdownUser = () => {
             <li>
               <Link
                 href="/profile"
-                onClick={closeDropdown} // Fechar dropdown ao clicar
+                onClick={closeDropdown}
                 className="flex w-full items-center gap-2.5 rounded-[7px] p-2.5 text-sm font-medium text-dark-4 duration-300 ease-in-out hover:bg-gray-2 hover:text-dark dark:text-dark-6 dark:hover:bg-dark-3 dark:hover:text-white lg:text-base"
               >
                 <svg
@@ -102,40 +152,17 @@ const DropdownUser = () => {
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"
-                    d="M8.99998 0.9375C7.03246 0.9375 5.43748 2.53249 5.43748 4.5C5.43748 6.46751 7.03246 8.0625 8.99998 8.0625C10.9675 8.0625 12.5625 6.46751 12.5625 4.5C12.5625 2.53249 10.9675 0.9375 8.99998 0.9375ZM6.56248 4.5C6.56248 3.15381 7.65378 2.0625 8.99998 2.0625C10.3462 2.0625 11.4375 3.15381 11.4375 4.5C11.4375 5.84619 10.3462 6.9375 8.99998 6.9375C7.65378 6.9375 6.56248 5.84619 6.56248 4.5Z"
+                    d="M8.99998 0.9375C7.03246 0.9375 5.43748 2.53249 5.43748 4.5C5.43748 6.46751 7.03246 8.0625 8.99998 8.0625C10.9675 8.0625 12.5625 6.46751 12.5625 4.5C12.5625 2.53249 10.9675 0.9375 8.99998 0.9375ZM6.56248 4.5C6.56248 3.15381 7.65378 2.0625 8.99998 2.0625C10.3462 2.0625 11.4375 3.15381 11.4375 4.5C11.4375 5.84619 10.3462 6.9375 8.99998 6"
                   />
                 </svg>
-                View profile
+                Meu perfil
               </Link>
             </li>
 
-            <li>
-              <Link
-                href="/settings"
-                onClick={closeDropdown} // Fechar dropdown ao clicar
-                className="flex w-full items-center gap-2.5 rounded-[7px] p-2.5 text-sm font-medium text-dark-4 duration-300 ease-in-out hover:bg-gray-2 hover:text-dark dark:text-dark-6 dark:hover:bg-dark-3 dark:hover:text-white lg:text-base"
-              >
-                <svg
-                  className="fill-current"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M9 6.1875C7.4467 6.1875 6.1875 7.4467 6.1875 9C6.1875 10.5533 7.4467 11.8125 9 11.8125C10.5533 11.8125 11.8125 10.5533 11.8125 9C11.8125 7.4467 10.5533 6.1875 9 6.1875ZM7.3125 9C7.3125 8.06802 8.06802 7.3125 9 7.3125C9.93198 7.3125 10.6875 8.06802 10.6875 9C10.6875 9.93198 9.93198 10.6875 9 10.6875C8.06802 10.6875 7.3125 9.93198 7.3125 9Z"
-                  />
-                </svg>
-                Settings
-              </Link>
-            </li>
-
+            {/* Botão de logout */}
             <li>
               <button
-                 // Logout
+                onClick={handleLogout} // Ação de logout
                 className="flex w-full items-center gap-2.5 rounded-[7px] p-2.5 text-sm font-medium text-dark-4 duration-300 ease-in-out hover:bg-gray-2 hover:text-dark dark:text-dark-6 dark:hover:bg-dark-3 dark:hover:text-white lg:text-base"
               >
                 <svg
@@ -149,10 +176,10 @@ const DropdownUser = () => {
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"
-                    d="M7.714 2.28598C7.93912 2.06086 8.36656 2.06086 8.59168 2.28598L13.8567 7.55102C14.0818 7.77614 14.0818 8.20358 13.8567 8.4287C13.6316 8.65382 13.2041 8.65382 12.979 8.4287L9 4.46466V13.0355C9 13.4107 8.6975 13.7269 8.339 13.8635C8.0225 13.9839 7.641 13.8603 7.381 13.5518C7.1209 13.2433 7.1209 12.746 7.381 12.4375L10.327 8.88191L3.3185 8.88191C2.88122 8.88191 2.50002 8.50071 2.50002 8.03546C2.50002 7.5702 2.88122 7.189 3.3185 7.189L10.327 7.189L7.381 3.5518C7.1209 3.2433 7.1209 2.746 7.381 2.4375C7.641 2.12898 8.0225 2.00538 8.339 2.11578C8.6975 2.25239 9 2.56854 9 2.94366V11.4647L12.979 7.4287C13.2041 7.20358 13.6316 7.20358 13.8567 7.4287C14.0818 7.65382 14.0818 8.08126 13.8567 8.30638L8.59168 13.551C8.36656 13.7761 7.93912 13.7761 7.714 13.551L2.28598 8.30638C2.06086 8.08126 2.06086 7.65382 2.28598 7.4287L7.714 2.28598Z"
+                    d="M8 16V12H16V8H8V4L4 8L8 12H4V16H8Z"
                   />
                 </svg>
-                Log out
+                Sair
               </button>
             </li>
           </ul>

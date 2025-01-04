@@ -15,6 +15,7 @@
     "flatpickr": "^4.6.13",
     "js-cookie": "^3.0.5",
     "jsvectormap": "^1.5.3",
+    "jwt-decode": "^4.0.0",
     "next": "^14.1.4",
     "react": "^18",
     "react-apexcharts": "^1.4.1",
@@ -22,6 +23,7 @@
     "react-quill": "^2.0.0",
     "react-select": "^5.8.0",
     "react-table": "^7.8.0",
+    "react-toastify": "^11.0.2",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
