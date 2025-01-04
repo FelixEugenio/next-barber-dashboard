@@ -1,43 +1,69 @@
+'use client'; // Marque o componente como Client Component
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Product } from "@/types/product";
-import {api} from "../../services/api";
+import { api } from "../../services/api";  // Ajuste o caminho para a configuração da sua API
+import Cookies from "js-cookie"; // Para acessar o token do cliente
 
-const productData: Product[] = [
-  {
-    image: "/images/product/product-01.png",
-    name: "Apple Watch Series 7",
-    category: "Electronics",
-    price: 296,
-    sold: 22,
-    profit: 45,
-  },
-  {
-    image: "/images/product/product-02.png",
-    name: "Macbook Pro M1",
-    category: "Electronics",
-    price: 546,
-    sold: 12,
-    profit: 125,
-  },
-  {
-    image: "/images/product/product-03.png",
-    name: "Dell Inspiron 15",
-    category: "Electronics",
-    price: 443,
-    sold: 64,
-    profit: 247,
-  },
-  {
-    image: "/images/product/product-04.png",
-    name: "HP Probook 450",
-    category: "Electronics",
-    price: 499,
-    sold: 72,
-    profit: 103,
-  },
-];
+// Definição do tipo para os dados de profissionais
+interface Professional {
+  id: string;
+  name: string;
+  specialty: string;
+  avatar: string;
+  available: boolean;
+}
 
 const TableProfessionals = () => {
+  // Estado para armazenar os profissionais e o carregamento
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // UseEffect para fazer a requisição assim que o componente for montado
+  useEffect(() => {
+    const fetchProfessionals = async () => {
+      // Obter o token do cookie
+      const token = Cookies.get("token");
+
+      if (!token) {
+        setError("Token não encontrado. Você precisa estar logado.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get("/professionals", {
+          headers: {
+            "Authorization": `Bearer ${token}`, // Passando o token no cabeçalho
+          },
+        });
+        setProfessionals(response.data); // Supondo que a resposta seja um array de profissionais
+        setLoading(false);
+      } catch (err) {
+        setError("Erro ao carregar os profissionais.");
+        setLoading(false);
+      }
+    };
+
+    fetchProfessionals();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center p-4">
+        <p>Carregando profissionais...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-4 text-red-500">
+        <p>{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
       <div className="px-4 py-6 md:px-6 xl:px-9">
@@ -48,54 +74,45 @@ const TableProfessionals = () => {
 
       <div className="grid grid-cols-6 border-t border-stroke px-4 py-4.5 dark:border-dark-3 sm:grid-cols-8 md:px-6 2xl:px-7.5">
         <div className="col-span-3 flex items-center">
-          <p className="font-medium">Nome do Profssional</p>
+          <p className="font-medium">Nome do Profissional</p>
         </div>
         <div className="col-span-2 hidden items-center sm:flex">
-          <p className="font-medium">Descriçao</p>
+          <p className="font-medium">Especialidade</p>
         </div>
         <div className="col-span-1 flex items-center">
-          <p className="font-medium">Price</p>
+          <p className="font-medium">Avatar</p>
         </div>
       </div>
 
-      {productData.map((product, key) => (
+      {professionals.map((professional) => (
         <div
           className="grid grid-cols-6 border-t border-stroke px-4 py-4.5 dark:border-dark-3 sm:grid-cols-8 md:px-6 2xl:px-7.5"
-          key={key}
+          key={professional.id}
         >
           <div className="col-span-3 flex items-center">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="h-12.5 w-15 rounded-md">
                 <Image
-                  src={product.image}
+                  src={professional.avatar}
                   width={60}
-                  height={50}
-                  alt="Product"
+                  height={60}
+                  alt={professional.name}
+                  className="rounded-full"
                 />
               </div>
               <p className="text-body-sm font-medium text-dark dark:text-dark-6">
-                {product.name}
+                {professional.name}
               </p>
             </div>
           </div>
           <div className="col-span-2 hidden items-center sm:flex">
             <p className="text-body-sm font-medium text-dark dark:text-dark-6">
-              {product.category}
+              {professional.specialty}
             </p>
           </div>
           <div className="col-span-1 flex items-center">
             <p className="text-body-sm font-medium text-dark dark:text-dark-6">
-              ${product.price}
-            </p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-body-sm font-medium text-dark dark:text-dark-6">
-              {product.sold}
-            </p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-body-sm font-medium text-green">
-              ${product.profit}
+              {professional.available ? "Disponível" : "Indisponível"}
             </p>
           </div>
         </div>

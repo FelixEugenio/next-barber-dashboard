@@ -4,7 +4,8 @@ import Link from "next/link";
 import { api } from "@/services/api";
 import { useRouter } from 'next/navigation'; // useRouter para navegação do lado do cliente
 import Cookies from "js-cookie"; // Importa js-cookie para gerenciar cookies do lado do cliente
-import { cookies } from "next/headers";
+import { ToastContainer, toast } from 'react-toastify'; // Importando toast e ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Estilos do Toastify
 
 export default function SigninWithPassword() {
   const [data, setData] = useState({
@@ -51,19 +52,24 @@ export default function SigninWithPassword() {
       console.log('Response:', response.data);
 
       // Verifique se o token existe e é uma string
-      
-        router.push("/Home"); 
-        // Navegação do lado do cliente
+      if (response.data.token) {
+        // Exibe o toast de sucesso
+        toast.success("Login realizado com sucesso!");
+
+        router.push("/Home"); // Navegação do lado do cliente
 
         const expireTime = 60 * 60 * 24 * 30 * 1000; // Tempo de expiração em segundos (1 hora)
-        Cookies.set("token", response.data.token,{
+        Cookies.set("token", response.data.token, {
           path: "/",
-          expires:expireTime,
-          secure:process.env.NODE_ENV === "production",
+          expires: expireTime,
+          secure: process.env.NODE_ENV === "production",
         });
-      
+      } else {
+        toast.error("Erro ao autenticar. Tente novamente.");
+      }
     } catch (error) {
       console.error("Erro no login:", error);
+      toast.error("Erro ao realizar login. Tente novamente!");
     }
   }
 
@@ -152,6 +158,9 @@ export default function SigninWithPassword() {
           </button>
         </div>
       </form>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 }
