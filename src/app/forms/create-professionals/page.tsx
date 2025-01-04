@@ -28,8 +28,8 @@ const CreateServiceLayout = () => {
                   <InputGroup
                     label="Nome"
                     type="text"
-                    placeholder=" Nome do Profissional"
-                    customClasses="mb-4.5"
+                    placeholder="Nome do Profissional"
+                    customClasses="mb-4.5 w-full"  // Adicionando w-full para garantir que o campo ocupe a largura total
                   />
                 </div>
 
@@ -37,7 +37,7 @@ const CreateServiceLayout = () => {
                   label="Especialidade"
                   type="text"
                   placeholder="Entre com a Especialidade"
-                  customClasses="mb-4.5"
+                  customClasses="mb-4.5 w-full"  // Aqui também adicionei w-full para uniformidade
                   required
                 />
 

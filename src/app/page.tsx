@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { api } from "@/services/api";
 import { useRouter } from 'next/navigation'; // useRouter para navegação do lado do cliente
+import Cookies from "js-cookie"; // Importa js-cookie para gerenciar cookies do lado do cliente
+import { cookies } from "next/headers";
 
 export default function SigninWithPassword() {
   const [data, setData] = useState({
@@ -25,11 +27,18 @@ export default function SigninWithPassword() {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget); // Cria FormData a partir do evento
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    const email = formData.get("email");
+    const password = formData.get("password");
 
-    if (email === "" || password === "") {
-      return; // Não faz nada se email ou senha estiverem vazios
+    // Verifique se email e senha não são null ou vazios
+    if (typeof email !== 'string' || email.trim() === "") {
+      console.error("Email inválido ou não fornecido.");
+      return;
+    }
+
+    if (typeof password !== 'string' || password.trim() === "") {
+      console.error("Senha inválida ou não fornecida.");
+      return;
     }
 
     try {
@@ -38,15 +47,23 @@ export default function SigninWithPassword() {
         password,
       });
 
-      console.log(response.data);
+      // Verifique o formato da resposta e do token
+      console.log('Response:', response.data);
 
-      // Se a resposta de login for bem-sucedida, redirecionar o usuário para o dashboard
+      // Verifique se o token existe e é uma string
       
-        router.push("/Home"); // Navegação do lado do cliente
+        router.push("/Home"); 
+        // Navegação do lado do cliente
+
+        const expireTime = 60 * 60 * 24 * 30 * 1000; // Tempo de expiração em segundos (1 hora)
+        Cookies.set("token", response.data.token,{
+          path: "/",
+          expires:expireTime,
+          secure:process.env.NODE_ENV === "production",
+        });
       
     } catch (error) {
       console.error("Erro no login:", error);
-      return;
     }
   }
 

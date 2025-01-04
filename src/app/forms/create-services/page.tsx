@@ -3,7 +3,6 @@ import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import InputGroup from "@/components/FormElements/InputGroup";
 
-
 const CreateServiceLayout = () => {
   return (
     <DefaultLayout>
@@ -24,8 +23,8 @@ const CreateServiceLayout = () => {
                   <InputGroup
                     label="Nome"
                     type="text"
-                    placeholder=" Nome do Serviço"
-                    customClasses="mb-4.5"
+                    placeholder="Nome do Serviço"
+                    customClasses="mb-4.5 w-full"  // Classe adicionada para garantir o mesmo tamanho
                   />
                 </div>
 
@@ -33,7 +32,7 @@ const CreateServiceLayout = () => {
                   label="Preço"
                   type="text"
                   placeholder="Entre com o preço do Serviço"
-                  customClasses="mb-4.5"
+                  customClasses="mb-4.5 w-full"  // Aqui, "w-full" também para garantir a consistência
                   required
                 />
 
@@ -58,7 +57,6 @@ const CreateServiceLayout = () => {
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-primary active:border-primary disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
                   ></textarea>
                 </div>
-                
 
                 <button className="flex w-full justify-center rounded-[7px] bg-primary p-[13px] font-medium text-white hover:bg-opacity-90">
                   Salvar
