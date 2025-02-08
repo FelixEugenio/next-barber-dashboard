@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect,useState } from "react";
 import { api } from "@/services/api";  // Seu serviço de API
 import { getCookieClient } from "@/lib/cookie.client"; // Função para pegar o token
 
@@ -41,10 +41,10 @@ const TableThree = () => {
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
-              <th className="min-w-[220px] px-4 py-4 font-medium text-dark dark:text-white xl:pl-7.5">ID</th>
+              <th className="min-w-[220px] px-4 py-4 font-medium text-drk dark:text-white">Professional</th>
+              <th className="min-w-[150px] px-4 py-4 font-medium text-dark dark:text-white xl:pl-7.5">ID</th>
               <th className="min-w-[220px] px-4 py-4 font-medium text-dark dark:text-white">Cliente</th>
-              <th className="min-w-[150px] px-4 py-4 font-medium text-dark dark:text-white">Professional</th>
-              <th className="min-w-[150px] px-4 py-4 font-medium text-dark dark:text-white">Serviço</th>
+              <th className="min-w-[150px] px-4 py-4 font-medium text-daark dark:text-white">Serviço</th>
               <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white">Preço</th>
               <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white">Status</th>
               <th className="min-w-[180px] px-4 py-4 font-medium text-dark dark:text-white">Data e Hora</th>
