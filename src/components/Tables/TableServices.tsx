@@ -86,11 +86,11 @@ const TableServices = () => {
             <p className="text-body-sm font-medium text-dark dark:text-dark-6">{service.description}</p>
           </div>
           <div className="col-span-1 flex items-center justify-center">
-            <p className="text-body-sm font-medium text-dark dark:text-dark-6">${service.price}</p>
+            <p className="text-body-sm font-medium text-dark dark:text-dark-6">€{service.price}</p>
           </div>
           <div className="col-span-1 flex items-center justify-center">
             <button onClick={() => handleDelete(service.id)} className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">
-              Excluir
+              Exclui
             </button>
           </div>
         </div>
