@@ -4,7 +4,7 @@ import { cookies } from "next/headers"; // Usando cookies do lado do servidor
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Ignorar requisições para arquivos do Next.js (como _next, favicon, etc.)
+
   if (pathname.startsWith("/_next") || pathname === "/") {
     return NextResponse.next();
   }
